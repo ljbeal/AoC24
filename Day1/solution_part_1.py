@@ -1,7 +1,7 @@
 """
 Solution for Day 1 Part 1
 """
-
+import bisect
 import time
 
 
@@ -10,7 +10,7 @@ class Solver:
     Main Solver Class
     """
 
-    __slots__ = ["_perf", "_inp", "_data", "_sorted"]
+    __slots__ = ["_perf", "_inp", "_data"]
 
     def __init__(self, inp: str):
         """
@@ -24,14 +24,13 @@ class Solver:
 
         self._inp = inp
         self._data = None
-        self._sorted = False  # flag True if lists are sorted
 
         self._perf["init"] = time.perf_counter() - t0
 
     @property
     def lists(self) -> dict:
         """
-        Returns a dict of the two lists
+        Returns a dict of the two lists (sorted)
 
         Uses a local cache for repeated calls
 
@@ -57,39 +56,27 @@ class Solver:
             # integers are always 5 figure, but it feels
             # better to generalise to any length
 
-            l, r = [item for item in row.strip().split(" ") if item != ""]
-            lists["l"].append(int(l))
-            lists["r"].append(int(r))
+            int_l, int_r = [int(item) for item in row.strip().split(" ") if item != ""]
+
+            id_l = bisect.bisect(lists["l"], int_l)
+            lists["l"].insert(id_l, int_l)
+
+            id_r = bisect.bisect(lists["r"], int_r)
+            lists["r"].insert(id_r, int_r)
+
         # cache the data
         self._data = lists
 
         self._perf["list_get"] = time.perf_counter() - t0
         return lists
 
-    @property
-    def sorted_lists(self) -> dict:
-        """
-        return the left and right lists, sorted
-        """
-        t0 = time.perf_counter()
-        if self._sorted:
-            self._perf["list_sort"] += time.perf_counter() - t0
-            return self._data
-
-        self._data["l"] = sorted(self.lists["l"])
-        self._data["r"] = sorted(self.lists["r"])
-
-        self._sorted = True
-        self._perf["list_sort"] = time.perf_counter() - t0
-        return self._data
-
     def run(self) -> int:
         """Run the solution"""
         t0 = time.perf_counter()
         result = 0
 
-        list_l = self.sorted_lists["l"]
-        list_r = self.sorted_lists["r"]
+        list_l = self.lists["l"]
+        list_r = self.lists["r"]
         for a, b in zip(list_l, list_r):
             result += abs(a - b)
 
