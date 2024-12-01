@@ -1,7 +1,14 @@
+"""
+Solution for Day 1 Part 1
+"""
+
 import time
 
 
 class Solver:
+    """
+    Main Solver Class
+    """
 
     __slots__ = ["_perf", "_inp", "_data", "_sorted"]
 
@@ -37,7 +44,7 @@ class Solver:
             self._perf["list_get"] += time.perf_counter() - t0
             return self._data
 
-        with open(self._inp, "r") as o:
+        with open(self._inp, "r", encoding="utf8") as o:
             rows = o.readlines()
 
         lists = {
@@ -89,7 +96,8 @@ class Solver:
         self._perf["run"] = time.perf_counter() - t0
         return result
 
-    def print_perf_info(self):
+    def print_perf_info(self) -> None:
+        """Prints a dict of performance info"""
         for step, dt in self._perf.items():
             print(f"step: {step}, {dt:.2f}s")
 
@@ -101,7 +109,5 @@ if __name__ == "__main__":
 
     slv = Solver("./Input/input.txt")
 
-    result = slv.run()
-
-    print(f"result: {result}")
+    print(f"result: {slv.run()}")
     slv.print_perf_info()
