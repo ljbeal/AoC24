@@ -10,7 +10,7 @@ class Solver:
     Main Solver Class
     """
 
-    __slots__ = ["_perf", "_inp", "_data"]
+    __slots__ = ["_perf", "_inp", "_data", "_counts"]
 
     def __init__(self, inp: str):
         """
@@ -24,6 +24,7 @@ class Solver:
 
         self._inp = inp
         self._data = None
+        self._counts = {}
 
         self._perf["init"] = time.perf_counter() - t0
 
@@ -64,13 +65,18 @@ class Solver:
             id_r = bisect.bisect(lists["r"], int_r)
             lists["r"].insert(id_r, int_r)
 
+            try:
+                self._counts[int_r] += 1
+            except KeyError:
+                self._counts[int_r] = 1
+
         # cache the data
         self._data = lists
 
         self._perf["list_get"] = time.perf_counter() - t0
         return lists
 
-    def run(self) -> int:
+    def run_part_1(self) -> int:
         """Run the solution"""
         t0 = time.perf_counter()
         result = 0
@@ -80,8 +86,28 @@ class Solver:
         for a, b in zip(list_l, list_r):
             result += abs(a - b)
 
-        self._perf["run"] = time.perf_counter() - t0
+        self._perf["run 1"] = time.perf_counter() - t0
         return result
+
+    def run_part_2(self) -> int:
+        """
+        Run the solution for the 2nd part
+
+        Returns:
+            int
+        """
+        t0 = time.perf_counter()
+
+        result = 0
+        for item in self.lists["l"]:
+            try:
+                result += self._counts[item] * item
+            except KeyError:
+                pass
+
+        self._perf["run 2"] = time.perf_counter() - t0
+        return result
+
 
     def print_perf_info(self) -> None:
         """Prints a dict of performance info"""
@@ -92,9 +118,11 @@ class Solver:
 if __name__ == "__main__":
     test_run = Solver("./Input/input_test.txt")
 
-    assert test_run.run() == 11
+    assert test_run.run_part_1() == 11, test_run.run_part_1()
+    assert test_run.run_part_2() == 31, test_run.run_part_2()
 
     slv = Solver("./Input/input.txt")
 
-    print(f"result: {slv.run()}")
+    print(f"result (part 1): {slv.run_part_1()}")
+    print(f"result (part 2): {slv.run_part_2()}")
     slv.print_perf_info()
