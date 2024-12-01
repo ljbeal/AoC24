@@ -1,5 +1,5 @@
 """
-Solution for Day 1 Part 1
+Solution for Day 1
 """
 import bisect
 import time
