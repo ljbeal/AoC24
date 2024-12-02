@@ -1,6 +1,8 @@
 """
 Day 2 Solution
 """
+import copy
+from ast import Index
 
 
 class SolverDay2:
@@ -20,9 +22,25 @@ class SolverDay2:
 
     def get_safety(
         self,
+        dampener: bool = False,
     ) -> list[bool]:
         """Extract safety levels in accordance with rules"""
-        def test_rules(levels_test):
+
+        def pairwise_compare(u: int, v: int, increasing: bool):
+            """Compare 2 levels, applying rules"""
+            # we're increasing, expecting v to be greater than u
+            if increasing and u > v:
+                return False
+            if not increasing and u < v:
+                return False
+            dv = abs(u - v)
+            if dv > 3:
+                return False
+            if dv < 1:
+                return False
+            return True
+
+        def test_rules(levels_test, local_dampener):
             """
             Inner function to test rules:
 
@@ -33,49 +51,59 @@ class SolverDay2:
             # print(f"\ntesting levels: {levels}")
             increasing = levels_test[0] < levels_test[1]
 
-            safe = True
             for i in range(len(levels_test) - 1):
                 # get two values to compare
                 u = levels_test[i]
                 v = levels_test[i + 1]
-                # max and min shifts
-                # print(f"testing {u} -> {v}")
-                dv = abs(u - v)
-                if 1 > dv or dv > 3:
-                    # print("\tshift out of bounds")
-                    safe = False
-                    break
 
-                locally_increasing = u < v
-                if increasing is not None:
-                    if (increasing and not locally_increasing) or (
-                        not increasing and locally_increasing
-                    ):
-                        # print("\tinflection")
-                        safe = False
-                        break
+                safe = pairwise_compare(u, v, increasing)
 
-            return safe
+                if not safe:
+                    if local_dampener:
+                        # oh god
+                        recursive = []
+                        for j in range(len(levels_test)):
+                            tmp = copy.deepcopy(levels_test)
+                            del tmp[j]
+                            recursive.append(test_rules(tmp, local_dampener=False))
+
+                        if not any(recursive):
+                            return False
+                    else:
+                        return False
+
+            return True
 
         output = []
         for report in self.data:
             # get integer levels of each report
             levels = [int(level) for level in report.strip().split(" ")]
-            output.append(test_rules(levels))
+            output.append(test_rules(levels, local_dampener=dampener))
 
         return output
 
     def total_safe(self) -> int:
         """Solution to part 1, returns a count of the number of safe reports"""
         # summation of bools is equivalent to counting the True
-        return sum(self.get_safety())
+        return sum(self.get_safety(dampener=False))
+
+    def total_damped_safe(self) -> int:
+        """Solution to part 1, returns a count of the number of safe reports"""
+        # summation of bools is equivalent to counting the True
+        return sum(self.get_safety(dampener=True))
 
 
 if __name__ == "__main__":
     test = SolverDay2("Input/input_test.txt")
 
-    assert test.total_safe() == 2, test.total_safe()
+    print("verify part 1")
+    test_1 = test.total_safe()
+    assert test_1 == 2, test_1
+    print("verify part 2")
+    test_2 = test.total_damped_safe()
+    assert test_2 == 4, test_2
 
     solution = SolverDay2("Input/input.txt")
 
     print(f"Day 2, part 1 solution: {solution.total_safe()}")
+    print(f"Day 2, part 1 solution: {solution.total_damped_safe()}")
