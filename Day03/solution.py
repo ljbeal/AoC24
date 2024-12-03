@@ -4,33 +4,57 @@ import re
 class Solver:
     def __init__(self, inp: str):
         with open(inp, "r", encoding="utf8") as o:
-            self._data = o.readlines()
+            self._data = o.read()
 
     @property
-    def data(self):
+    def data(self) -> str:
         return self._data
 
-    def run(self) -> int:
-        match = re.compile(r"mul\((\d*),(\d*)\)")
+    def run(self, flow: bool) -> int:
+        # first, get each pair and extract the integers and their location index
+        instruct_mul = {}
+        for mul in re.finditer(r"mul\((\d*),(\d*)\)", self.data):
+            instruct_mul[mul.start(0)] = (mul.group(1), mul.group(2))
+
+        do = []
+        dont = []
+        if flow:
+            for m in re.finditer(r"do\(\)", self.data):
+                do.append(m.start(0))
+
+            for m in re.finditer(r"don't\(\)", self.data):
+                dont.append(m.start(0))
 
         sum = 0
-        for line in self.data:
-            # collects a list of (a, b) pairs from each mul(a,b) group
-            pairs = re.findall(match, line)
+        enable = True
+        for idx, pair in instruct_mul.items():
 
-            for pair in pairs:
-                a, b = pair
+            if len(do) > 0 and idx > do[0]:
+                enable = True
+                del do[0]
+            if len(dont) > 0 and idx > dont[0]:
+                enable = False
+                del dont[0]
 
-                sum += int(a) * int(b)
+            if enable:
+                sum += int(pair[0]) * int(pair[1])
 
         return sum
 
 
 if __name__ == "__main__":
-    test = Solver("Input/input_test.txt")
-    assert test.run() == 161
+    test = Solver("Input/input_test_2.txt")
+    test_1 = test.run(flow=False)
+    assert test_1 == 161
+
+    test = Solver("Input/input_test_2.txt")
+    test_2 = test.run(flow=True)
+    assert test_2 == 48
 
     print("run part 1")
     sol = Solver("Input/input.txt")
 
-    print(f"part 1 solution: {sol.run()}")
+    print(f"part 1 solution: {sol.run(flow=False)}")
+
+    print("run part 2")
+    print(f"part 2 solution: {sol.run(flow=True)}")
