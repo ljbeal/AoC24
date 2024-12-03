@@ -1,7 +1,5 @@
 import re
 
-from Day02.solution import SolverDay2
-
 
 class Solver:
     def __init__(self, inp: str):
