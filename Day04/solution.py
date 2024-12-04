@@ -3,20 +3,17 @@ from typing import Union
 
 import numpy as np
 
+from lib.base_solver import BaseSolver
 
-class Solver:
 
-    __slots__ = ["_data", "_array"]
+class Solver(BaseSolver):
+
+    __slots__ = ["_array"]
 
     def __init__(self, inp: str):
-        with open(inp, "r", encoding="utf8") as o:
-            self._data = o.read()
+        super().__init__(inp=inp)
 
         self._array = None
-
-    @property
-    def data(self) -> str:
-        return self._data
 
     @property
     def array(self):
