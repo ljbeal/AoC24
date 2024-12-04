@@ -1,10 +1,7 @@
 import re
-from itertools import count
 from typing import Union
-from xml.sax.handler import property_dom_node
 
 import numpy as np
-from tomlkit import register_encoder
 
 
 class Solver:
