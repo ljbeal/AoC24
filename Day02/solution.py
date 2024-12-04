@@ -4,21 +4,15 @@ Day 2 Solution
 import copy
 from ast import Index
 
+from lib.base_solver import BaseSolver
 
-class SolverDay2:
+
+class Solver(BaseSolver):
     """
     Read in levels and check safety
     """
-    __slots__ = ["_data"]
-
     def __init__(self, inp: str):
-        with open(inp, "r", encoding="utf8") as o:
-            self._data: list = o.readlines()
-
-    @property
-    def data(self):
-        """Private data property"""
-        return self._data
+        super().__init__(inp=inp)
 
     def get_safety(
         self,
@@ -75,7 +69,7 @@ class SolverDay2:
             return True
 
         output = []
-        for report in self.data:
+        for report in self.data.split("\n"):
             # get integer levels of each report
             levels = [int(level) for level in report.strip().split(" ")]
             output.append(test_rules(levels, local_dampener=dampener))
@@ -94,7 +88,7 @@ class SolverDay2:
 
 
 if __name__ == "__main__":
-    test = SolverDay2("Input/input_test.txt")
+    test = Solver("Input/input_test.txt")
 
     print("verify part 1")
     test_1 = test.total_safe()
@@ -103,7 +97,7 @@ if __name__ == "__main__":
     test_2 = test.total_damped_safe()
     assert test_2 == 4, test_2
 
-    solution = SolverDay2("Input/input.txt")
+    solution = Solver("Input/input.txt")
 
     print(f"Day 2, part 1 solution: {solution.total_safe()}")
     print(f"Day 2, part 1 solution: {solution.total_damped_safe()}")

@@ -1,14 +1,11 @@
 import re
 
+from lib.base_solver import BaseSolver
 
-class Solver:
+
+class Solver(BaseSolver):
     def __init__(self, inp: str):
-        with open(inp, "r", encoding="utf8") as o:
-            self._data = o.read()
-
-    @property
-    def data(self) -> str:
-        return self._data
+        super().__init__(inp=inp)
 
     def run(self, flow: bool) -> int:
         """

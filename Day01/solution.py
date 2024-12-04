@@ -4,13 +4,15 @@ Solution for Day 1
 import bisect
 import time
 
+from lib.base_solver import BaseSolver
 
-class Solver:
+
+class Solver(BaseSolver):
     """
     Main Solver Class
     """
 
-    __slots__ = ["_perf", "_inp", "_data", "_counts"]
+    __slots__ = ["_perf", "_lists", "_counts"]
 
     def __init__(self, inp: str):
         """
@@ -20,11 +22,13 @@ class Solver:
              inp (str): Path for input file
         """
         t0 = time.perf_counter()
-        self._perf = {}
 
-        self._inp = inp
-        self._data = None
+        super().__init__(inp=inp)
+
+        self._perf = {}
         self._counts = {}
+
+        self._lists = None  # init as None for cache checking
 
         self._perf["init"] = time.perf_counter() - t0
 
@@ -39,13 +43,11 @@ class Solver:
              dict: {"l": [list], "r": [list]}
         """
         t0 = time.perf_counter()
-        if self._data is not None:
-            # if the cache exists, return that instead
-            self._perf["list_get"] += time.perf_counter() - t0
-            return self._data
 
-        with open(self._inp, "r", encoding="utf8") as o:
-            rows = o.readlines()
+        if self._lists is not None:
+            return self._lists
+
+        rows = self.data.split("\n")
 
         lists = {
             "l": [],
@@ -71,7 +73,7 @@ class Solver:
                 self._counts[int_r] = 1
 
         # cache the data
-        self._data = lists
+        self._lists = lists
 
         self._perf["list_get"] = time.perf_counter() - t0
         return lists
