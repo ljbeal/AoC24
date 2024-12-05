@@ -1,3 +1,4 @@
+import math
 from typing import Union
 
 import networkx.exception
@@ -122,8 +123,31 @@ class Solver(BaseSolver):
         print(true_path)
 
         # now, compare the path against each update
+        # the update cycle can never be longer than the true path
+        # to do this, go over the update list and index their entries
+        # in the true path. If that list is always increasing, then we're good
+        # thanks to this answer https://mathematica.stackexchange.com/a/274632
+        valid_updates = []
+        for update in self.updates:
+            tmp = []
+            for item in update:
+                path_idx = true_path.index(item)
+                tmp.append(path_idx)
 
+            print(f"for updates {update}, indexes are: {tmp}")
+            # now check if tmp is always increasing
+            if sorted(tmp) == tmp:
+                valid_updates.append(update)
 
+        # now get the central number from each valid update
+        midpoints = []
+        for valid_update in valid_updates:
+            mid_id = math.floor(len(valid_update)/2)
+            midpoints.append(valid_update[mid_id])
+
+        print(midpoints)
+
+        return sum(midpoints)
 
 if __name__ == "__main__":
     import time
