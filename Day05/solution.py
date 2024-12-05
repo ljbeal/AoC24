@@ -127,12 +127,15 @@ class Solver(BaseSolver):
                 print("valid")
                 valid_updates.append(update)
             else:
-                print("invalid")
                 # if we're invalid, we need to conform this list to the graph
                 # lets create a subgraph containing only those nodes and then
                 # find the longest path
+                print("invalid")
                 subgraph = graph.subgraph(update)
-                fixed_updates.append(nx.dag_longest_path(subgraph))
+                fixed_update = nx.dag_longest_path(subgraph)
+                fixed_updates.append(fixed_update)
+                # indent point is here;  {fixed_update}
+                print(f"       ┗╸ fixed: {fixed_update}")
 
 
         # now get the central number from each valid update
