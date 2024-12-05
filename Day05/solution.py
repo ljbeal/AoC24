@@ -1,15 +1,19 @@
 import math
 from typing import Union
 
-import networkx.exception
-from networkx.classes import subgraph
-
 from lib.base_solver import BaseSolver
 
 import networkx as nx
 
 
 class Rule:
+    """
+    Stub from an earlier solution attempt, though it does work for the current one
+    In theory it's unnecessary bloat but we can leave it here.
+
+    Child/Parent functionality is no longer used, so this is no more than a glorified
+    vector-like class
+    """
 
     __slots__ = ["a", "b", "_parent", "_child"]
 
@@ -84,7 +88,7 @@ class Solver(BaseSolver):
         return [int(item) for item in inp]
 
     @property
-    def rules(self) -> list[list[int]]:
+    def rules(self) -> list[Rule]:
         return self._rules
 
     @property
@@ -93,7 +97,7 @@ class Solver(BaseSolver):
 
     def get_graph(self) -> nx.DiGraph:
         """
-        generate a graph of all rules
+        Generate a directed graph of all rules
         """
         G = nx.DiGraph()
         for rule in self.rules:
@@ -102,7 +106,7 @@ class Solver(BaseSolver):
         return G
 
     def run(self) -> (int, int):
-        # first, get the true path
+        # first, get the graph
         graph = self.get_graph()
 
         valid_updates = []
@@ -111,18 +115,23 @@ class Solver(BaseSolver):
             print(f"assessing update {update}", end = "... ")
             valid = True
             for idx in range(len(update) - 1):
+                # check each "edge" in this update list
                 u = update[idx]
                 v = update[idx+1]
                 # print(f"checking {u}->{v}")
-
+                # not enough to check just that the path exists
+                # also check that the path is direct
+                # this assumes that a rule covers this transition
+                # however the solution works, so I guess we proved that?
                 path = None
                 if nx.has_path(graph, u, v):
                     path = nx.shortest_path(graph, u, v)
-
+                # check that we have a path, and that it's direct
                 if path is None or len(path) != 2:
+                    # invalidate and stop searching
                     valid = False
                     break
-
+            # valid update, no further processing needed
             if valid:
                 print("valid")
                 valid_updates.append(update)
@@ -137,11 +146,10 @@ class Solver(BaseSolver):
                 # indent point is here;  {fixed_update}
                 print(f"       ┗╸ fixed: {fixed_update}")
 
-
-        # now get the central number from each valid update
+        # now get the central number from each update
         valid_midpoints = self.get_midpoints(valid_updates)
         fixed_midpoints = self.get_midpoints(fixed_updates)
-
+        # return part 1 and 2 solutions together
         return sum(valid_midpoints), sum(fixed_midpoints)
 
     @staticmethod
