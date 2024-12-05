@@ -2,6 +2,7 @@ import math
 from typing import Union
 
 import networkx.exception
+from networkx.classes import subgraph
 
 from lib.base_solver import BaseSolver
 
@@ -100,42 +101,50 @@ class Solver(BaseSolver):
 
         return G
 
-    def run(self) -> int:
+    def run(self) -> (int, int):
         # first, get the true path
         graph = self.get_graph()
 
         valid_updates = []
+        fixed_updates = []
         for update in self.updates:
-            print(f"assessing update {update}")
+            print(f"assessing update {update}", end = "... ")
             valid = True
             for idx in range(len(update) - 1):
                 u = update[idx]
                 v = update[idx+1]
-                print(f"checking {u}->{v}")
+                # print(f"checking {u}->{v}")
 
                 path = None
                 if nx.has_path(graph, u, v):
                     path = nx.shortest_path(graph, u, v)
-
-                print(f"\t{path}")
 
                 if path is None or len(path) != 2:
                     valid = False
                     break
 
             if valid:
+                print("valid")
                 valid_updates.append(update)
+            else:
+                print("invalid")
+                # if we're invalid, we need to conform this list to the graph
+                # lets create a subgraph containing only those nodes and then
+                # find the longest path
+                subgraph = graph.subgraph(update)
+                fixed_updates.append(nx.dag_longest_path(subgraph))
+
 
         # now get the central number from each valid update
         valid_midpoints = self.get_midpoints(valid_updates)
+        fixed_midpoints = self.get_midpoints(fixed_updates)
 
-        return sum(valid_midpoints)
+        return sum(valid_midpoints), sum(fixed_midpoints)
 
     @staticmethod
     def get_midpoints(inp: list[list]) -> list:
         midpoints = []
         for lst in inp:
-            print(lst)
             mid_id = math.floor(len(lst)/2)
             midpoints.append(lst[mid_id])
 
@@ -145,21 +154,23 @@ if __name__ == "__main__":
     import time
 
     t0 = time.perf_counter()
-    test_1 = Solver(inp="Input/input_test.txt")
+    test = Solver(inp="Input/input_test.txt")
     t_init = time.perf_counter()
-    test_1_run = test_1.run()
+    test_1_run, test_2_run = test.run()
     t_run = time.perf_counter()
 
-    print(f"Part 1 test: {t_run-t0:.2f}s")
+    print(f"Test, time: {t_run-t0:.2f}s")
 
     assert test_1_run == 143, test_1_run
+    assert test_2_run == 123, test_2_run
 
-    print("running solution, part 1")
+    print("running solution")
     t0 = time.perf_counter()
     sol = Solver(inp="Input/input.txt")
 
-    sol_run_1 = sol.run()
+    sol_run_1, sol_run_2 = sol.run()
     t_run = time.perf_counter()
 
-    print(f"Part 1 full: {t_run-t0:.2f}s")
+    print(f"Solution time: {t_run-t0:.2f}s")
     print(f"Part 1 solution: {sol_run_1}")
+    print(f"Part 2 solution: {sol_run_2}")
