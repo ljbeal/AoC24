@@ -1,11 +1,10 @@
 from typing import Union
 
+import networkx.exception
+
 from lib.base_solver import BaseSolver
 
 import networkx as nx
-import matplotlib.pyplot as plt
-
-import plotly.graph_objects as go
 
 
 class Rule:
@@ -99,16 +98,21 @@ class Solver(BaseSolver):
         Create a DAG from the ruleset and collect the longest path
         """
         G = nx.DiGraph()
+        processed = []
         for rule in self.rules:
             # print(f"adding edge: {rule}")
-            G.add_edge(rule.a, rule.b)
-
-            G.add_node(rule.a, name=str(rule.a))
-            G.add_node(rule.b, name=str(rule.b))
-
-        nx.draw(G, with_labels=True)
-        plt.draw()
-        plt.show()
+            if rule in processed:
+                continue
+            processed.append(rule)
+            # why do I do this kind of thing..?
+            # if adding the node creates a cycle, don't add it
+            # this ABSOLUTELY causes issues with this method
+            # but I'm committed to the bit
+            try:
+                G.add_edge(rule.a, rule.b)
+                nx.dag_longest_path(G)
+            except networkx.exception.NetworkXUnfeasible:
+                G.remove_edge(rule.a, rule.b)
 
         return nx.dag_longest_path(G)
 
@@ -130,7 +134,7 @@ if __name__ == "__main__":
     test_1_run = test_1.run()
     t_run = time.perf_counter()
 
-    print(f"Part 1 test: {t0 - t_run:.2f}s")
+    print(f"Part 1 test: {t_run-t0:.2f}s")
 
     # assert test_1_run == 143
 
@@ -141,5 +145,5 @@ if __name__ == "__main__":
     sol_run_1 = sol.run()
     t_run = time.perf_counter()
 
-    print(f"Part 1 full: {t0 - t_run:.2f}s")
+    print(f"Part 1 full: {t_run-t0:.2f}s")
     print(f"Part 1 solution: {sol_run_1}")
