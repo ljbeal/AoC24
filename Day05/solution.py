@@ -127,15 +127,19 @@ class Solver(BaseSolver):
                 valid_updates.append(update)
 
         # now get the central number from each valid update
+        valid_midpoints = self.get_midpoints(valid_updates)
+
+        return sum(valid_midpoints)
+
+    @staticmethod
+    def get_midpoints(inp: list[list]) -> list:
         midpoints = []
-        for valid_update in valid_updates:
-            print(valid_update)
-            mid_id = math.floor(len(valid_update)/2)
-            midpoints.append(valid_update[mid_id])
+        for lst in inp:
+            print(lst)
+            mid_id = math.floor(len(lst)/2)
+            midpoints.append(lst[mid_id])
 
-        print(midpoints)
-
-        return sum(midpoints)
+        return midpoints
 
 if __name__ == "__main__":
     import time
