@@ -90,58 +90,46 @@ class Solver(BaseSolver):
     def updates(self) -> list[list[int]]:
         return self._updates
 
-    def get_true_path(self) -> list:
+    def get_graph(self) -> nx.DiGraph:
         """
-        Slow, but fun?
-
-        Extracts the "true path", a full application of the rules.
-
-        Create a DAG from the ruleset and collect the longest path
+        generate a graph of all rules
         """
         G = nx.DiGraph()
-        processed = []
         for rule in self.rules:
-            # print(f"adding edge: {rule}")
-            if rule in processed:
-                continue
-            processed.append(rule)
-            # why do I do this kind of thing..?
-            # if adding the node creates a cycle, don't add it
-            # this ABSOLUTELY causes issues with this method
-            # but I'm committed to the bit
-            try:
-                G.add_edge(rule.a, rule.b)
-                nx.dag_longest_path(G)
-            except networkx.exception.NetworkXUnfeasible:
-                G.remove_edge(rule.a, rule.b)
+            G.add_edge(rule.a, rule.b)
 
-        return nx.dag_longest_path(G)
+        return G
 
     def run(self) -> int:
         # first, get the true path
-        true_path = self.get_true_path()
-        print(true_path)
+        graph = self.get_graph()
 
-        # now, compare the path against each update
-        # the update cycle can never be longer than the true path
-        # to do this, go over the update list and index their entries
-        # in the true path. If that list is always increasing, then we're good
-        # thanks to this answer https://mathematica.stackexchange.com/a/274632
         valid_updates = []
         for update in self.updates:
-            tmp = []
-            for item in update:
-                path_idx = true_path.index(item)
-                tmp.append(path_idx)
+            print(f"assessing update {update}")
+            valid = True
+            for idx in range(len(update) - 1):
+                u = update[idx]
+                v = update[idx+1]
+                print(f"checking {u}->{v}")
 
-            print(f"for updates {update}, indexes are: {tmp}")
-            # now check if tmp is always increasing
-            if sorted(tmp) == tmp:
+                path = None
+                if nx.has_path(graph, u, v):
+                    path = nx.shortest_path(graph, u, v)
+
+                print(f"\t{path}")
+
+                if path is None or len(path) != 2:
+                    valid = False
+                    break
+
+            if valid:
                 valid_updates.append(update)
 
         # now get the central number from each valid update
         midpoints = []
         for valid_update in valid_updates:
+            print(valid_update)
             mid_id = math.floor(len(valid_update)/2)
             midpoints.append(valid_update[mid_id])
 
@@ -160,7 +148,7 @@ if __name__ == "__main__":
 
     print(f"Part 1 test: {t_run-t0:.2f}s")
 
-    # assert test_1_run == 143
+    assert test_1_run == 143, test_1_run
 
     print("running solution, part 1")
     t0 = time.perf_counter()
