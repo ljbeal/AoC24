@@ -77,11 +77,7 @@ class Solver(BaseSolver):
     def __init__(self, inp: str):
         super().__init__(inp=inp)
 
-        self._path = []
-
-    def run(self) -> int:
-
-        print(self.array)
+    def run_path(self, added_obstacle: list | None = None) -> list:
         # get obstacle coords
         obs_i, obs_j = np.where(self.array == "#")
         # numpy int repr is ugly, convert
@@ -99,25 +95,34 @@ class Solver(BaseSolver):
         # create an initial position
         pos = Position(int(ui[0]), int(uj[0]), "n")
         # step through all positions until we walk out of bounds
+        path = []
         while pos.in_bounds(bounds=[imax, jmax]):
-            self._path.append(pos)
+            path.append(pos)
             pos = pos.next(obstacles=obstacles)
 
+        return path
+
+    def run(self) -> int:
+        path = self.run_path()
         # ooh nice display
         display = copy.deepcopy(self.array)
-        for pos in self._path:
-            print(f"adding pos {pos}")
+        for pos in path:
             display[pos.i, pos.j] = pos.d
         print(display)
 
         # now we need to get the count of all positions that were _touched_
         # NOT the total step count, since we're counting a rotation there
         checked = []
-        for pos in self._path:
+        for pos in path:
             if pos.location not in checked:
                 checked.append(pos.location)
 
         return len(checked)
+
+    def find_loops(self) -> int:
+        """
+        brute force yeeee
+        """
 
 
 if __name__ == "__main__":
