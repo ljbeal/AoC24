@@ -22,7 +22,7 @@ class Position:
         return f'Position({self.i}, {self.j}, "{self.d}")'
 
     def __hash__(self) -> int:
-        return hash(self.i) + hash(self.j) + hash(self.d)
+        return hash(str(self))
 
     def __eq__(self, other: "Position") -> bool:
         if not isinstance(other, Position):
@@ -72,16 +72,21 @@ class Position:
 
 class Solver(BaseSolver):
 
-    __slots__ = ["_path"]
+    __slots__ = ["_obstacles"]
 
     def __init__(self, inp: str):
         super().__init__(inp=inp)
 
-    def run_path(self, added_obstacle: list | None = None) -> list:
-        # get obstacle coords
         obs_i, obs_j = np.where(self.array == "#")
         # numpy int repr is ugly, convert
-        obstacles = list(zip([int(i) for i in obs_i], [int(j) for j in obs_j]))
+        self._obstacles = list(zip([int(i) for i in obs_i], [int(j) for j in obs_j]))
+
+    def run_path(self, added_obstacle: tuple | None = None) -> [list, bool]:
+        # get obstacle coords
+        obstacles = self._obstacles
+        if added_obstacle is not None:
+            obstacles += added_obstacle
+
         print("obstacle list:")
         print(obstacles)
 
@@ -96,14 +101,22 @@ class Solver(BaseSolver):
         pos = Position(int(ui[0]), int(uj[0]), "n")
         # step through all positions until we walk out of bounds
         path = []
-        while pos.in_bounds(bounds=[imax, jmax]):
-            path.append(pos)
+        loop = False
+        while True:  # keep stepping
             pos = pos.next(obstacles=obstacles)
+            # if we exit the bounds, break
+            if not pos.in_bounds(bounds=[imax, jmax]):
+                break
+            # if the path loops, break
+            if pos in path:
+                loop = True
+                break
+            path.append(pos)
 
-        return path
+        return path, loop
 
-    def run(self) -> int:
-        path = self.run_path()
+    def run(self) -> [int, bool]:
+        path, loop = self.run_path()
         # ooh nice display
         display = copy.deepcopy(self.array)
         for pos in path:
@@ -117,12 +130,18 @@ class Solver(BaseSolver):
             if pos.location not in checked:
                 checked.append(pos.location)
 
-        return len(checked)
+        return len(checked), loop
 
     def find_loops(self) -> int:
         """
         brute force yeeee
         """
+        new_obstacles = []
+        for i in range(self.array.shape[0]):
+            for j in range(self.array.shape[1]):
+                if (i, j) in self._obstacles:
+                    continue
+                new_obstacles.append((i, j))
 
 
 if __name__ == "__main__":
@@ -131,7 +150,7 @@ if __name__ == "__main__":
 
     test_1_run = test_1.run()
 
-    assert test_1_run == 41, test_1_run
+    assert test_1_run[0] == 41, test_1_run
 
     print("Running part 1")
     sol = Solver(inp="Input/input.txt")
