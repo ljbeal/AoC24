@@ -1,5 +1,6 @@
 import copy
 import time
+from multiprocessing import Pool, cpu_count
 
 import numpy as np
 
@@ -60,7 +61,7 @@ class Position:
         return nextpos
 
     def in_bounds(self, bounds: list[int]):
-        return self.i < bounds[0] and self.j < bounds[1]
+        return bounds[0] > self.i >= 0 and bounds[1] > self.j >= 0
 
 
 class Solver(BaseSolver):
@@ -76,26 +77,22 @@ class Solver(BaseSolver):
 
     def run_path(self, added_obstacle: tuple | None = None) -> [list, bool]:
         # get obstacle coords
-        obstacles = self._obstacles
+        obstacles = copy.deepcopy(self._obstacles)
         if added_obstacle is not None:
-            obstacles += added_obstacle
-
-        print("obstacle list:")
-        print(obstacles)
+            obstacles.append(added_obstacle)
 
         # area boundaries
         # if coord == bound, we're outside
         imax, jmax = self.array.shape
-        print(f"area bounds: {imax}, {jmax}")
 
         # starting location
         ui, uj = np.where(self.array == "^")
         # create an initial position
         pos = Position(int(ui[0]), int(uj[0]), "n")
         # step through all positions until we walk out of bounds
-        path = []
-        dirs = {
-            "n": [],
+        path = [pos]
+        cardinal = {
+            "n": [pos],
             "e": [],
             "s": [],
             "w": [],
@@ -107,23 +104,16 @@ class Solver(BaseSolver):
             if not pos.in_bounds(bounds=[imax, jmax]):
                 break
             # if the path loops, break
-            if (pos.i, pos.j) in dirs[pos.d]:
+            if (pos.i, pos.j) in cardinal[pos.d]:
                 loop = True
                 break
-
             path.append(pos)
-            dirs[pos.d] = (pos.i, pos.j)
+            cardinal[pos.d].append((pos.i, pos.j))
 
         return path, loop
 
     def run(self) -> int:
         path, loop = self.run_path()
-        # ooh nice display
-        display = copy.deepcopy(self.array)
-        for pos in path:
-            display[pos.i, pos.j] = pos.d
-        print(display)
-
         # now we need to get the count of all positions that were _touched_
         # NOT the total step count, since we're counting a rotation there
         checked = []
@@ -135,14 +125,35 @@ class Solver(BaseSolver):
 
     def find_loops(self) -> int:
         """
-        brute force yeeee
+        find obstacle locations that create loops
         """
-        new_obstacles = []
-        for i in range(self.array.shape[0]):
-            for j in range(self.array.shape[1]):
-                if (i, j) in self._obstacles:
-                    continue
-                new_obstacles.append((i, j))
+        # loops can only occur when traversing a previously touched spot,
+        # where turning right at that intersection would put you back on that path
+
+        base_path, loop = self.run_path()
+
+        new = []
+        for pos in base_path:
+            new.append((pos.i, pos.j))
+
+        loops = 0
+        new = list(set(new))
+        for idx, addition in enumerate(new):
+            print(f"running with added obstacle {idx+1}/{len(new)}: {addition}")
+            path, loop = self.run_path(added_obstacle=addition)
+
+            if loop:
+                loops += 1
+
+        # with Pool(cpu_count()) as p:
+        #     cache = p.map(self.run_path, new)
+        #
+        # loops = 0
+        # for run in cache:
+        #     if run[1]:
+        #         loops += 1
+
+        return loops - 1  # exclude the position right in front of the guard
 
 
 if __name__ == "__main__":
@@ -155,10 +166,10 @@ if __name__ == "__main__":
     t1 = time.perf_counter()
     print(f"test 1, {t1 - t0:.2f}s")
 
-    # test_2_run = test.find_loops()
-    # assert test_2_run == 6, test_2_run
-    # t2 = time.perf_counter()
-    # print(f"test 2, {t2 - t1:.2f}s")
+    test_2_run = test.find_loops()
+    assert test_2_run == 6, test_2_run
+    t2 = time.perf_counter()
+    print(f"test 2, {t2 - t1:.2f}s")
 
     print("Running part 1")
     sol = Solver(inp="Input/input.txt")
