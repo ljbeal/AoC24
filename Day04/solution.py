@@ -8,23 +8,8 @@ from lib.base_solver import BaseSolver
 
 class Solver(BaseSolver):
 
-    __slots__ = ["_array"]
-
     def __init__(self, inp: str):
         super().__init__(inp=inp)
-
-        self._array = None
-
-    @property
-    def array(self):
-        if self._array is not None:
-            return self._array
-
-        # convert string data into a numpy array
-        array = [list(line.strip()) for line in self.data.split("\n")]
-        # create transposed array, since numpy coordinate systems are y,x
-        self._array = np.array(array)
-        return self._array
 
     def run(self) -> int:
         # use a sliding window to search. This window can be 4x1, 1x4 or 4x4 (diag)
