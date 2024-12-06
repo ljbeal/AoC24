@@ -1,4 +1,5 @@
 import copy
+import time
 
 import numpy as np
 
@@ -20,14 +21,6 @@ class Position:
 
     def __repr__(self) -> str:
         return f'Position({self.i}, {self.j}, "{self.d}")'
-
-    def __hash__(self) -> int:
-        return hash(str(self))
-
-    def __eq__(self, other: "Position") -> bool:
-        if not isinstance(other, Position):
-            return False
-        return hash(self) == hash(other)
 
     @property
     def location(self) -> tuple[int, int]:
@@ -101,6 +94,12 @@ class Solver(BaseSolver):
         pos = Position(int(ui[0]), int(uj[0]), "n")
         # step through all positions until we walk out of bounds
         path = []
+        dirs = {
+            "n": [],
+            "e": [],
+            "s": [],
+            "w": [],
+        }
         loop = False
         while True:  # keep stepping
             pos = pos.next(obstacles=obstacles)
@@ -108,14 +107,16 @@ class Solver(BaseSolver):
             if not pos.in_bounds(bounds=[imax, jmax]):
                 break
             # if the path loops, break
-            if pos in path:
+            if (pos.i, pos.j) in dirs[pos.d]:
                 loop = True
                 break
+
             path.append(pos)
+            dirs[pos.d] = (pos.i, pos.j)
 
         return path, loop
 
-    def run(self) -> [int, bool]:
+    def run(self) -> int:
         path, loop = self.run_path()
         # ooh nice display
         display = copy.deepcopy(self.array)
@@ -130,7 +131,7 @@ class Solver(BaseSolver):
             if pos.location not in checked:
                 checked.append(pos.location)
 
-        return len(checked), loop
+        return len(checked)
 
     def find_loops(self) -> int:
         """
@@ -146,13 +147,25 @@ class Solver(BaseSolver):
 
 if __name__ == "__main__":
 
-    test_1 = Solver(inp="Input/input_test.txt")
+    test = Solver(inp="Input/input_test.txt")
 
-    test_1_run = test_1.run()
+    t0 = time.perf_counter()
+    test_1_run = test.run()
+    assert test_1_run== 41, test_1_run
+    t1 = time.perf_counter()
+    print(f"test 1, {t1 - t0:.2f}s")
 
-    assert test_1_run[0] == 41, test_1_run
+    # test_2_run = test.find_loops()
+    # assert test_2_run == 6, test_2_run
+    # t2 = time.perf_counter()
+    # print(f"test 2, {t2 - t1:.2f}s")
 
     print("Running part 1")
     sol = Solver(inp="Input/input.txt")
 
-    print(f"Part 1 solution: {sol.run()}")
+    t0 = time.perf_counter()
+    print(f"Part 1 solution: {sol.run()}, {time.perf_counter() - t0:.2f}s")
+
+    print("Running part 2")
+    t0 = time.perf_counter()
+    print(f"Part 2 solution: {sol.find_loops()}, {time.perf_counter() - t0:.2f}s")
