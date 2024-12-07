@@ -20,14 +20,15 @@ class Solver(BaseSolver):
             input = [int(item.strip()) for item in input.split(" ") if item.strip() != ""]
 
             print(f"Assessing inputs: {input} for target {target}")
-
+            throw = False
             max_reachable = math.prod(input)
             # the "largest" operation we can do is multiplication
             # therefore the largest number we can achieve is the product of the list
             # throw these out before wasting calculations on them
-            # if max_reachable < target:
-            #     print(f"\tTarget {target} cannot be reached")
-            #     continue
+            if max_reachable < target:
+                print(f"\tTarget {target} cannot be reached")
+                # continue
+                throw = True
 
             # now "brute force" with permutations
             operations = itertools.product(["+", "*"], repeat=len(input)-1)
@@ -49,6 +50,9 @@ class Solver(BaseSolver):
                 if tmp == target:
                     print(f"\tTarget Achieved, storing {target}")
                     achievable.append(target)
+
+                    if throw:
+                        exit()
                     break
 
         return sum(achievable)
