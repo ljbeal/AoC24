@@ -25,3 +25,7 @@ class BaseSolver:
         # create transposed array, since numpy coordinate systems are y,x
         self._array = np.array(array)
         return self._array
+
+    @property
+    def rows(self):
+        return self.data.split("\n")
