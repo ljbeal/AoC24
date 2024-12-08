@@ -44,10 +44,6 @@ class Solver(BaseSolver):
 
         return count
 
-    def regenerate_text(self, array: np.array) -> str:
-        """Regenerate the string input from a 2D array"""
-        return "\n".join(["".join(row) for row in array])
-
     def findall(self, string: Union[str, "np.array"]) -> int:
         """Find all XMAS/SAMX instances"""
         if not isinstance(string, str):
