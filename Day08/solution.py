@@ -36,19 +36,19 @@ class Solver(BaseSolver):
                 di = pair[0][0] - pair[1][0]
                 dj = pair[0][1] - pair[1][1]
 
-                pos = self.create_node(pair[0], (di, dj))
-                neg = self.create_node(pair[1], (di, dj), add=False)
+                pos = [self.create_node(pair[0], (di, dj))]
+                neg = [self.create_node(pair[1], (di, dj), add=False)]
 
                 display = np.full_like(self.array, ".")
                 display[pair[0][0], pair[0][1]] = "!"
                 display[pair[1][0], pair[1][1]] = "!"
 
-                if self.check_inside_bounds(pos):
-                    new_locations.append(pos)
-                    display[pos[0], pos[1]] = "#"
-                if self.check_inside_bounds(neg):
-                    new_locations.append(neg)
-                    display[neg[0], neg[1]] = "#"
+                for tmp in pos:
+                    if self.check_inside_bounds(tmp):
+                        new_locations.append(tmp)
+                for tmp in neg:
+                    if self.check_inside_bounds(tmp):
+                        new_locations.append(tmp)
 
         # get unique locations
         display = copy.deepcopy(self.array)
