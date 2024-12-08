@@ -59,6 +59,18 @@ class BaseSolver:
         return True
 
     @staticmethod
-    def regenerate_text(array: np.array) -> str:
-        """Regenerate the string input from a 2D array"""
-        return "\n".join(["".join(row) for row in array])
+    def regenerate_text(array: np.array, spacing: int = 0) -> str:
+        """
+        Regenerate the string input from a 2D array
+
+        Args:
+            array (np.array):
+                array to process
+            spacing (int):
+                extra whitespace between points
+
+        Returns:
+            str: formatted array
+        """
+        joinchar = "" * (spacing + 1)
+        return "\n".join([joinchar.join(row) for row in array])
