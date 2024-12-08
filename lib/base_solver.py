@@ -47,7 +47,7 @@ class BaseSolver:
 
     def check_inside_bounds(self, points: tuple[int, int]) -> bool:
         # assert that we have positive coords
-        if not points[0] * points[1] >= 0:
+        if not points[0] * points[1] >= 0 or not points[0] + points[1] >= 0:
             return False
 
         if not points[0] < self.array.shape[0]:
