@@ -36,19 +36,35 @@ class Solver(BaseSolver):
                 di = pair[0][0] - pair[1][0]
                 dj = pair[0][1] - pair[1][1]
 
-                pos = [self.create_node(pair[0], (di, dj))]
-                neg = [self.create_node(pair[1], (di, dj), add=False)]
+                if not resonant:
+                    pos = self.create_node(pair[0], (di, dj))
+                    if self.check_inside_bounds(pos):
+                        new_locations.append(pos)
 
-                display = np.full_like(self.array, ".")
-                display[pair[0][0], pair[0][1]] = "!"
-                display[pair[1][0], pair[1][1]] = "!"
+                    neg = self.create_node(pair[1], (di, dj), add=False)
+                    if self.check_inside_bounds(neg):
+                        new_locations.append(neg)
+                # if we're using the part 2 features, created a "mirrored ray"
+                # essentially, create every point that goes _through_ the other antenna
+                else:
+                    cont = True
+                    pos = pair[1]
+                    while cont:
+                        pos = self.create_node(pos, (di, dj))
 
-                for tmp in pos:
-                    if self.check_inside_bounds(tmp):
-                        new_locations.append(tmp)
-                for tmp in neg:
-                    if self.check_inside_bounds(tmp):
-                        new_locations.append(tmp)
+                        if self.check_inside_bounds(pos):
+                            new_locations.append(pos)
+                        else:
+                            cont = False
+                    cont = True
+                    pos = pair[0]
+                    while cont:
+                        pos = self.create_node(pos, (di, dj), add=False)
+
+                        if self.check_inside_bounds(pos):
+                            new_locations.append(pos)
+                        else:
+                            cont = False
 
         # get unique locations
         display = copy.deepcopy(self.array)
@@ -68,8 +84,8 @@ if __name__ == "__main__":
     test_1_run = test.run()
     assert test_1_run == 14, test_1_run
 
-    # test_2_run = test.run(resonant=True)
-    # assert test_2_run == 34, test_2_run
+    test_2_run = test.run(resonant=True)
+    assert test_2_run == 34, test_2_run
 
     sol = Solver(inp="Input/input.txt")
 
@@ -78,8 +94,6 @@ if __name__ == "__main__":
 
     part_1 = sol.run()
     print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
-
-    exit()
 
     print("Running Part 2")
     t0 = time.perf_counter()
