@@ -29,3 +29,18 @@ class BaseSolver:
     @property
     def rows(self):
         return self.data.split("\n")
+
+    def points_where(self, test: str) -> list[tuple[int, int]]:
+        """
+        returns a list of points where array==test
+
+        Args:
+            test (Any):
+                item to test against
+
+        Returns:
+            list of points
+        """
+        x, y = np.where(self.array == test)
+
+        return list(zip([int(point) for point in x], [int(point) for point in y]))
