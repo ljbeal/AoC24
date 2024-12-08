@@ -44,3 +44,16 @@ class BaseSolver:
         x, y = np.where(self.array == test)
 
         return list(zip([int(point) for point in x], [int(point) for point in y]))
+
+    def check_inside_bounds(self, points: tuple[int, int]) -> bool:
+        # assert that we have positive coords
+        if not points[0] * points[1] >= 0:
+            return False
+
+        if not points[0] < self.array.shape[0]:
+            return False
+
+        if not points[1] < self.array.shape[1]:
+            return False
+
+        return True
