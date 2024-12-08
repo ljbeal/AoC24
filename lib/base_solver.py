@@ -72,5 +72,5 @@ class BaseSolver:
         Returns:
             str: formatted array
         """
-        joinchar = "" * (spacing + 1)
+        joinchar = " " * (spacing + 1)
         return "\n".join([joinchar.join(row) for row in array])
