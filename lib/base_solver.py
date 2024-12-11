@@ -79,11 +79,16 @@ class BaseSolver:
             self,
             array: np.array,
             spacing = 0,
-            coloured_red: list[tuple[int, int]] | None = None,
-            coloured_grn: list[tuple[int, int]] | None = None,
+            colours: dict[str: list[tuple[int, int]]] | None = None,
     ):
-        if coloured_red and coloured_grn is None:
+        if colours is None:
             return self.regenerate_text(array, spacing)
+
+        colour_codes = {
+            "red": "\033[91m",
+            "green": "\033[92m",
+            "blue": "\033[0;34m"
+        }
 
         joinchar = " " * (spacing + 1)
 
@@ -93,11 +98,14 @@ class BaseSolver:
             for j, col in enumerate(row):
                 item = array[i, j]
 
-                if (i, j) in coloured_red:
-                    tmp.append(f"\033[91m{item}\033[00m")
-                elif (i, j) in coloured_grn:
-                    tmp.append(f"\033[92m{item}\033[00m")
-                else:
+                coloured = False
+                for colour, points in colours.items():
+                    if (i, j) in points:
+                        code = colour_codes[colour]
+                        tmp.append(f"{code}{item}\033[00m")
+                        coloured = True
+                        break
+                if not coloured:
                     tmp.append(item)
             output.append(joinchar.join(tmp))
         return "\n".join(output)
