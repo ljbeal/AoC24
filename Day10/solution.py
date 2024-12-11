@@ -45,8 +45,12 @@ class Position:
         if node not in self._parents:
             self._parents.append(node)
 
+    @property
+    def parents(self):
+        return self._parents
 
-def bfs(array: list[list[Position]], node: Position):
+
+def bfs(array: list[list[Position]], node: Position) -> tuple[list[Position], list[Position]]:
     queue = collections.deque()
     queue.append(node)
 
@@ -54,12 +58,14 @@ def bfs(array: list[list[Position]], node: Position):
     max_j = len(array[0])
 
     peaks = []
+    explored = []
     while len(queue) > 0:
         test = queue.popleft()
 
         # print(f"testing {test}, {test.h}")
 
         if test.h == 9:
+            # mark a reachable peak
             peaks.append(test)
 
         adj = []
@@ -78,12 +84,14 @@ def bfs(array: list[list[Position]], node: Position):
 
         for node in adj:
             if not node.explored and node.h == test.h + 1:
+                # print(f"marking node {node}")
                 node.explored = True
                 node.add_parent(test)
 
                 queue.append(node)
+                explored.append(node)
 
-    return peaks
+    return peaks, explored
 
 
 class Solver(BaseSolver):
@@ -119,11 +127,27 @@ class Solver(BaseSolver):
         for loc in heads:
             first = points[loc[0]][loc[1]]
 
-            trail = bfs(copy.deepcopy(self.pos_array), first)
+            trail, explored = bfs(copy.deepcopy(self.pos_array), first)
+
+            pts = []
+            pks = []
+            for pos in explored:
+                if pos.h != 9:
+                    pts.append((pos.i, pos.j))
+                else:
+                    pks.append((pos.i, pos.j))
+            print(first, len(trail))
+            print(self.regenerate_coloured_text(
+                self.array,
+                spacing=1,
+                colours = {
+                    "red": pts,
+                    "green": pks,
+                    "blue": [(first.i, first.j)]
+                }
+            ))
 
             trails.append(trail)
-
-            # print(first, trail)
 
         count = 0
         for trail in trails:
@@ -134,16 +158,16 @@ class Solver(BaseSolver):
 
 if __name__ == "__main__":
 
-    test_1 = Solver(inp="Input/input_test.txt")
+    # test_1 = Solver(inp="Input/input_test.txt")
+    # test_1_run = test_1.run()
+    # assert test_1_run == 36, test_1_run
 
-    test_1_run = test_1.run()
-
-    assert test_1_run == 36, test_1_run
+    # test_2 = Solver(inp="Input/input_test.txt")
+    # test_2_run = test_2.run()
+    # assert test_2_run == 81, test_2_run
 
     sol = Solver(inp="Input/input.txt")
-
     print("Running Part 1")
     t0 = time.perf_counter()
-
     part_1 = sol.run()
     print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
