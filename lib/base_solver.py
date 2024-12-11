@@ -74,3 +74,30 @@ class BaseSolver:
         """
         joinchar = " " * (spacing + 1)
         return "\n".join([joinchar.join(row) for row in array])
+
+    def regenerate_coloured_text(
+            self,
+            array: np.array,
+            spacing = 0,
+            coloured_red: list[tuple[int, int]] | None = None,
+            coloured_grn: list[tuple[int, int]] | None = None,
+    ):
+        if coloured_red and coloured_grn is None:
+            return self.regenerate_text(array, spacing)
+
+        joinchar = " " * (spacing + 1)
+
+        output = []
+        for i, row in enumerate(array):
+            tmp = []
+            for j, col in enumerate(row):
+                item = array[i, j]
+
+                if (i, j) in coloured_red:
+                    tmp.append(f"\033[91m{item}\033[00m")
+                elif (i, j) in coloured_grn:
+                    tmp.append(f"\033[92m{item}\033[00m")
+                else:
+                    tmp.append(item)
+            output.append(joinchar.join(tmp))
+        return "\n".join(output)
