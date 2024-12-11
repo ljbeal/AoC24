@@ -1,3 +1,4 @@
+import functools
 import time
 
 from lib.base_solver import BaseSolver
@@ -12,6 +13,12 @@ class Stone:
 
     def __repr__(self):
         return f"({self.num})"
+
+    def __hash__(self):
+        return self.num
+
+    def __eq__(self, other):
+        return hash(other) == hash(self)
 
     @property
     def num(self) -> int:
@@ -32,31 +39,39 @@ class Solver(BaseSolver):
     def __init__(self, inp: str):
         super().__init__(inp=inp)
 
-    def run(self) -> int:
+    def run(self, blinks: int) -> int:
         stones = [Stone(int(num)) for num in self.data.split(" ")]
 
-        for blink in range(25):
+        for blink in range(blinks):
+            print(f"performing blink {blink+1}/{blinks}")
             tmp = []
-            for stone in stones:
-                tmp += stone.blink()
+            for idx in range(len(stones)):
+                tmp += blink_stone(stones[idx])
+            # I paid for the whole RAM, I'm going to use the whole RAM
             stones = tmp
-            print(stones)
 
         return len(stones)
+
+
+@functools.cache
+def blink_stone(stone: Stone) -> list[Stone]:
+    return stone.blink()
 
 
 if __name__ == "__main__":
 
     test_1 = Solver(inp="Input/input_test.txt")
-
-    test_1_run = test_1.run()
-
+    test_1_run = test_1.run(blinks=25)
     assert test_1_run == 55312, test_1_run
 
     sol = Solver(inp="Input/input.txt")
-
     print("Running Part 1")
     t0 = time.perf_counter()
-
-    part_1 = sol.run()
+    part_1 = sol.run(blinks=25)
     print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
+
+    sol = Solver(inp="Input/input.txt")
+    print("Running Part 2")
+    t0 = time.perf_counter()
+    part_2 = sol.run(blinks=75)
+    print(f"Part 2 result: {part_2} {time.perf_counter() - t0:.3f}s")
