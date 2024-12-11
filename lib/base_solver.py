@@ -78,9 +78,25 @@ class BaseSolver:
     def regenerate_coloured_text(
             self,
             array: np.array,
-            spacing = 0,
+            spacing: int = 0,
             colours: dict[str: list[tuple[int, int]]] | None = None,
-    ):
+    ) -> str:
+        """
+        Equivalent of regenerate_text, but allows for colour specification
+
+        Passing an array and a dictionary will allow for colouring points:
+        {colour: [(i1, j1), (i2, j2), ..., (in, jn)]}
+
+        Args:
+            array (np.array):
+                base array
+            spacing (int):
+                extra spacing
+            colours (dict):
+                dict of colours and points in the following format:
+                {colour: [(i1, j1), (i2, j2), ..., (in, jn)]}
+
+        """
         if colours is None:
             return self.regenerate_text(array, spacing)
 
