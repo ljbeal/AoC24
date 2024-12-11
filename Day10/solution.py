@@ -100,6 +100,24 @@ def bfs(array: list[list[Position]], node: Position) -> tuple[list[Position], li
     return peaks, explored
 
 
+def dfs(array: list[list[Position]], node: Position) -> list[Position]:
+    node.explored = True
+
+    max_i = len(array)
+    max_j = len(array[0])
+
+    adj = [array[pos[0]][pos[1]] for pos in node.all_adjacent(max_i, max_j)]
+
+    traversed = []
+    for test in adj:
+        if not test.explored and test.h == node.h + 1:
+            node.add_parent(test)
+            traversed.append(test)
+            traversed += dfs(array, test)
+
+    return traversed
+
+
 class Solver(BaseSolver):
 
     __slots__ = ["_points_array"]
@@ -129,37 +147,20 @@ class Solver(BaseSolver):
         heads = self.points_where("0")
         # peaks = self.points_where("9")
 
-        trails = []
+        peaks = 0
         for loc in heads:
             first = points[loc[0]][loc[1]]
 
-            trail, explored = bfs(copy.deepcopy(self.pos_array), first)
+            dfs_path = dfs(copy.deepcopy(self.pos_array), first)
 
-            pts = []
-            pks = []
-            for pos in explored:
-                if pos.h != 9:
-                    pts.append((pos.i, pos.j))
-                else:
-                    pks.append((pos.i, pos.j))
-            print(first, len(trail))
-            print(self.regenerate_coloured_text(
-                self.array,
-                spacing=1,
-                colours = {
-                    "red": pts,
-                    "green": pks,
-                    "blue": [(first.i, first.j)]
-                }
-            ))
+            # for node in dfs_path[::-1]:
+            #     print(node, node.parents)
 
-            trails.append(trail)
+            for node in dfs_path:
+                if node.h == 9:
+                    peaks += 1
 
-        count = 0
-        for trail in trails:
-            count += len(trail)
-
-        return count
+        return peaks
 
 
 if __name__ == "__main__":
