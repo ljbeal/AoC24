@@ -1,4 +1,5 @@
 import functools
+import multiprocessing
 import time
 
 from lib.base_solver import BaseSolver
@@ -44,11 +45,14 @@ class Solver(BaseSolver):
 
         for blink in range(blinks):
             print(f"performing blink {blink+1}/{blinks}")
-            tmp = []
-            for idx in range(len(stones)):
-                tmp += blink_stone(stones[idx])
-            # I paid for the whole RAM, I'm going to use the whole RAM
-            stones = tmp
+
+            # I paid for the whole machine, I'm going to use the whole machine
+            with multiprocessing.Pool(12) as P:
+                tmp = P.map(blink_stone, stones)
+
+            stones = []
+            for output in tmp:
+                stones += output
 
         return len(stones)
 
