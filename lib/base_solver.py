@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 
 
@@ -97,31 +99,33 @@ class BaseSolver:
                 {colour: [(i1, j1), (i2, j2), ..., (in, jn)]}
 
         """
+        # if there is no colouration, no point running a more expensive function
         if colours is None:
             return self.regenerate_text(array, spacing)
-
+        # list of available colour codes
         colour_codes = {
             "red": "\033[91m",
             "green": "\033[92m",
             "blue": "\033[0;34m"
         }
-
+        # generate iterable of all colours, so we can append non coloured chars early
+        all_colours = list(itertools.chain.from_iterable(colours.values()))
+        # joining character, considers spacing
         joinchar = " " * (spacing + 1)
-
         output = []
         for i, row in enumerate(array):
             tmp = []
             for j, col in enumerate(row):
                 item = array[i, j]
-
-                coloured = False
+                # exit early if this item is uncoloured
+                if (i, j) not in all_colours:
+                    tmp.append(item)
+                    continue
+                # find the colour and apply the code
                 for colour, points in colours.items():
                     if (i, j) in points:
                         code = colour_codes[colour]
                         tmp.append(f"{code}{item}\033[00m")
-                        coloured = True
                         break
-                if not coloured:
-                    tmp.append(item)
             output.append(joinchar.join(tmp))
         return "\n".join(output)
