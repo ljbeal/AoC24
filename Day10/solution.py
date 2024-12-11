@@ -99,7 +99,7 @@ def bfs(array: list[list[Position]], node: Position) -> list[Position]:
 
 
 def dfs(array: list[list[Position]], node: Position, full_search: bool = False) -> list[Position]:
-    if full_search:
+    if not full_search:
         node.explored = True
 
     max_i = len(array)
@@ -112,7 +112,7 @@ def dfs(array: list[list[Position]], node: Position, full_search: bool = False) 
             node.add_children(test)
             if node not in traversed:
                 traversed.append(test)
-            traversed += dfs(array, test)
+            traversed += dfs(array, test, full_search)
 
     return traversed
 
@@ -180,19 +180,19 @@ class Solver(BaseSolver):
 
 if __name__ == "__main__":
 
-    # test_1 = Solver(inp="Input/input_test.txt")
-    # test_1_run = test_1.run(full_search=False)
-    # assert test_1_run == 36, test_1_run
+    test_1 = Solver(inp="Input/input_test.txt")
+    test_1_run = test_1.run(full_search=False)
+    assert test_1_run == 36, test_1_run
 
     test_2 = Solver(inp="Input/input_test.txt")
     test_2_run = test_2.run(full_search=True)
     assert test_2_run == 81, test_2_run
 
-    # sol = Solver(inp="Input/input.txt")
-    # print("Running Part 1")
-    # t0 = time.perf_counter()
-    # part_1 = sol.run(full_search=False)
-    # print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
+    sol = Solver(inp="Input/input.txt")
+    print("Running Part 1")
+    t0 = time.perf_counter()
+    part_1 = sol.run(full_search=False)
+    print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
 
     sol = Solver(inp="Input/input.txt")
     print("Running Part 2")
