@@ -45,15 +45,6 @@ class Position:
     def h(self):
         return self._h
 
-    def add_children(self, node: "Position"):
-        if node not in self._children:
-            self._children.append(node)
-
-    @property
-    def children(self):
-        return self._children
-
-
     def all_adjacent(self, max_i: int, max_j: int):
         adj = []
         if self.i > 0:
@@ -90,8 +81,6 @@ def bfs(array: list[list[Position]], node: Position) -> list[Position]:
             if not node.explored and node.h == test.h + 1:
                 # print(f"marking node {node}")
                 node.explored = True
-                node.add_children(test)
-
                 queue.append(node)
                 explored.append(node)
 
@@ -109,7 +98,6 @@ def dfs(array: list[list[Position]], node: Position, full_search: bool = False) 
     traversed = [node]
     for test in adj:
         if not test.explored and test.h == node.h + 1:
-            node.add_children(test)
             if node not in traversed:
                 traversed.append(test)
             traversed += dfs(array, test, full_search)
@@ -152,24 +140,11 @@ class Solver(BaseSolver):
 
             dfs_path = dfs(copy.deepcopy(self.pos_array), first, full_search=full_search)
 
-            pth = []
-            pks = []
-            for node in sorted(dfs_path, key=lambda x: x.h):
-                if node.h == 9:
-                    pks.append((node.i, node.j))
-                elif node.h != 0:
-                    pth.append((node.i, node.j))
-
-                # print(node, node.children)
-
             # print(self.regenerate_coloured_text(self.array, colours={
             #     "green": [(first.i, first.j)],
             #     "red": pth,
             #     "blue": pks,
             # }))
-
-
-            # exit()
 
             for node in dfs_path:
                 if node.h == 9:
@@ -198,4 +173,4 @@ if __name__ == "__main__":
     print("Running Part 2")
     t0 = time.perf_counter()
     part_2 = sol.run(full_search=True)
-    print(f"Part 1 result: {part_2} {time.perf_counter() - t0:.3f}s")
+    print(f"Part 2 result: {part_2} {time.perf_counter() - t0:.3f}s")
