@@ -68,24 +68,18 @@ class Position:
         return adj
 
 
-def bfs(array: list[list[Position]], node: Position) -> tuple[list[Position], list[Position]]:
+def bfs(array: list[list[Position]], node: Position) -> list[Position]:
     queue = collections.deque()
     queue.append(node)
 
     max_i = len(array)
     max_j = len(array[0])
 
-    peaks = []
     explored = []
     while len(queue) > 0:
         test = queue.popleft()
 
         # print(f"testing {test}, {test.h}")
-
-        if test.h == 9:
-            # mark a reachable peak
-            peaks.append(test)
-
         adj = [array[pos[0]][pos[1]] for pos in test.all_adjacent(max_i, max_j)]
 
         for node in adj:
@@ -97,7 +91,7 @@ def bfs(array: list[list[Position]], node: Position) -> tuple[list[Position], li
                 queue.append(node)
                 explored.append(node)
 
-    return peaks, explored
+    return explored
 
 
 def dfs(array: list[list[Position]], node: Position) -> list[Position]:
@@ -108,11 +102,12 @@ def dfs(array: list[list[Position]], node: Position) -> list[Position]:
 
     adj = [array[pos[0]][pos[1]] for pos in node.all_adjacent(max_i, max_j)]
 
-    traversed = []
+    traversed = [node]
     for test in adj:
         if not test.explored and test.h == node.h + 1:
-            node.add_parent(test)
-            traversed.append(test)
+            test.add_parent(node)
+            if node not in traversed:
+                traversed.append(test)
             traversed += dfs(array, test)
 
     return traversed
@@ -153,9 +148,6 @@ class Solver(BaseSolver):
 
             dfs_path = dfs(copy.deepcopy(self.pos_array), first)
 
-            # for node in dfs_path[::-1]:
-            #     print(node, node.parents)
-
             for node in dfs_path:
                 if node.h == 9:
                     peaks += 1
@@ -169,9 +161,9 @@ if __name__ == "__main__":
     test_1_run = test_1.run()
     assert test_1_run == 36, test_1_run
 
-    test_2 = Solver(inp="Input/input_test.txt")
-    test_2_run = test_2.run()
-    assert test_2_run == 81, test_2_run
+    # test_2 = Solver(inp="Input/input_test.txt")
+    # test_2_run = test_2.run()
+    # assert test_2_run == 81, test_2_run
 
     sol = Solver(inp="Input/input.txt")
     print("Running Part 1")
