@@ -1,5 +1,6 @@
 import collections
 import copy
+import math
 import time
 
 from lib.base_solver import BaseSolver
@@ -7,14 +8,14 @@ from lib.base_solver import BaseSolver
 
 class Position:
 
-    __slots__ = ["_i", "_j", "_h", "explored", "_parents"]
+    __slots__ = ["_i", "_j", "_h", "explored", "_children"]
 
     def __init__(self, i: int, j: int, h: int):
         self._i = int(i)
         self._j = int(j)
         self._h = int(h)
 
-        self._parents = []
+        self._children = []
 
         self.explored = False
 
@@ -29,6 +30,9 @@ class Position:
         """
         return int(( (self.i + self.j) * (self.i + self.j + 1) / 2 ) + self.i)
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
     @property
     def i(self):
         return self._i
@@ -41,13 +45,13 @@ class Position:
     def h(self):
         return self._h
 
-    def add_parent(self, node: "Position"):
-        if node not in self._parents:
-            self._parents.append(node)
+    def add_children(self, node: "Position"):
+        if node not in self._children:
+            self._children.append(node)
 
     @property
-    def parents(self):
-        return self._parents
+    def children(self):
+        return self._children
 
 
     def all_adjacent(self, max_i: int, max_j: int):
@@ -86,7 +90,7 @@ def bfs(array: list[list[Position]], node: Position) -> list[Position]:
             if not node.explored and node.h == test.h + 1:
                 # print(f"marking node {node}")
                 node.explored = True
-                node.add_parent(test)
+                node.add_children(test)
 
                 queue.append(node)
                 explored.append(node)
@@ -94,18 +98,18 @@ def bfs(array: list[list[Position]], node: Position) -> list[Position]:
     return explored
 
 
-def dfs(array: list[list[Position]], node: Position) -> list[Position]:
-    node.explored = True
+def dfs(array: list[list[Position]], node: Position, full_search: bool = False) -> list[Position]:
+    if full_search:
+        node.explored = True
 
     max_i = len(array)
     max_j = len(array[0])
 
     adj = [array[pos[0]][pos[1]] for pos in node.all_adjacent(max_i, max_j)]
-
     traversed = [node]
     for test in adj:
         if not test.explored and test.h == node.h + 1:
-            test.add_parent(node)
+            node.add_children(test)
             if node not in traversed:
                 traversed.append(test)
             traversed += dfs(array, test)
@@ -136,7 +140,7 @@ class Solver(BaseSolver):
 
         return self._points_array
 
-    def run(self):
+    def run(self, full_search: bool):
         points = self.pos_array
 
         heads = self.points_where("0")
@@ -146,7 +150,26 @@ class Solver(BaseSolver):
         for loc in heads:
             first = points[loc[0]][loc[1]]
 
-            dfs_path = dfs(copy.deepcopy(self.pos_array), first)
+            dfs_path = dfs(copy.deepcopy(self.pos_array), first, full_search=full_search)
+
+            pth = []
+            pks = []
+            for node in sorted(dfs_path, key=lambda x: x.h):
+                if node.h == 9:
+                    pks.append((node.i, node.j))
+                elif node.h != 0:
+                    pth.append((node.i, node.j))
+
+                # print(node, node.children)
+
+            # print(self.regenerate_coloured_text(self.array, colours={
+            #     "green": [(first.i, first.j)],
+            #     "red": pth,
+            #     "blue": pks,
+            # }))
+
+
+            # exit()
 
             for node in dfs_path:
                 if node.h == 9:
@@ -157,16 +180,22 @@ class Solver(BaseSolver):
 
 if __name__ == "__main__":
 
-    test_1 = Solver(inp="Input/input_test.txt")
-    test_1_run = test_1.run()
-    assert test_1_run == 36, test_1_run
+    # test_1 = Solver(inp="Input/input_test.txt")
+    # test_1_run = test_1.run(full_search=False)
+    # assert test_1_run == 36, test_1_run
 
-    # test_2 = Solver(inp="Input/input_test.txt")
-    # test_2_run = test_2.run()
-    # assert test_2_run == 81, test_2_run
+    test_2 = Solver(inp="Input/input_test.txt")
+    test_2_run = test_2.run(full_search=True)
+    assert test_2_run == 81, test_2_run
+
+    # sol = Solver(inp="Input/input.txt")
+    # print("Running Part 1")
+    # t0 = time.perf_counter()
+    # part_1 = sol.run(full_search=False)
+    # print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
 
     sol = Solver(inp="Input/input.txt")
-    print("Running Part 1")
+    print("Running Part 2")
     t0 = time.perf_counter()
-    part_1 = sol.run()
-    print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
+    part_2 = sol.run(full_search=True)
+    print(f"Part 1 result: {part_2} {time.perf_counter() - t0:.3f}s")
