@@ -141,11 +141,19 @@ class Solver(BaseSolver):
 
             dfs_path = dfs(copy.deepcopy(self.pos_array), first, full_search=full_search)
 
-            # print(self.regenerate_coloured_text(self.array, colours={
-            #     "green": [(first.i, first.j)],
-            #     "red": pth,
-            #     "blue": pks,
-            # }))
+            pth = []
+            pks = []
+            for node in sorted(dfs_path, key=lambda x: x.h):
+                if node.h == 9:
+                    pks.append((node.i, node.j))
+                elif node.h != 0:
+                    pth.append((node.i, node.j))
+            print(first)
+            print(self.regenerate_coloured_text(self.array, colours={
+                "blue": [(first.i, first.j)],
+                "red": pth,
+                "green": pks,
+            }))
 
             for node in dfs_path:
                 if node.h == 9:
