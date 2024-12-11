@@ -63,7 +63,7 @@ class Position:
         return adj
 
 
-def bfs(array: list[list[Position]], node: Position) -> list[Position]:
+def bfs(array: list[list[Position]], node: Position, full_search: bool = False) -> list[Position]:
     queue = collections.deque()
     queue.append(node)
 
@@ -80,7 +80,8 @@ def bfs(array: list[list[Position]], node: Position) -> list[Position]:
         for node in adj:
             if not node.explored and node.h == test.h + 1:
                 # print(f"marking node {node}")
-                node.explored = True
+                if not full_search:
+                    node.explored = True
                 queue.append(node)
                 explored.append(node)
 
