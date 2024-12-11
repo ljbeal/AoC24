@@ -50,6 +50,24 @@ class Position:
         return self._parents
 
 
+    def all_adjacent(self, max_i: int, max_j: int):
+        adj = []
+        if self.i > 0:
+            pos = (self.i - 1, self.j)
+            adj.append(pos)
+        if self.j > 0:
+            pos = (self.i, self.j - 1)
+            adj.append(pos)
+        if self.i < max_i - 1:
+            pos = (self.i + 1, self.j)
+            adj.append(pos)
+        if self.j < max_j - 1:
+            pos = (self.i, self.j + 1)
+            adj.append(pos)
+
+        return adj
+
+
 def bfs(array: list[list[Position]], node: Position) -> tuple[list[Position], list[Position]]:
     queue = collections.deque()
     queue.append(node)
@@ -68,19 +86,7 @@ def bfs(array: list[list[Position]], node: Position) -> tuple[list[Position], li
             # mark a reachable peak
             peaks.append(test)
 
-        adj = []
-        if test.i > 0:
-            pos = array[test.i - 1][test.j]
-            adj.append(pos)
-        if test.j > 0:
-            pos = array[test.i][test.j - 1]
-            adj.append(pos)
-        if test.i < max_i - 1:
-            pos = array[test.i + 1][test.j]
-            adj.append(pos)
-        if test.j < max_j - 1:
-            pos = array[test.i][test.j + 1]
-            adj.append(pos)
+        adj = [array[pos[0]][pos[1]] for pos in test.all_adjacent(max_i, max_j)]
 
         for node in adj:
             if not node.explored and node.h == test.h + 1:
@@ -158,13 +164,13 @@ class Solver(BaseSolver):
 
 if __name__ == "__main__":
 
-    # test_1 = Solver(inp="Input/input_test.txt")
-    # test_1_run = test_1.run()
-    # assert test_1_run == 36, test_1_run
+    test_1 = Solver(inp="Input/input_test.txt")
+    test_1_run = test_1.run()
+    assert test_1_run == 36, test_1_run
 
-    # test_2 = Solver(inp="Input/input_test.txt")
-    # test_2_run = test_2.run()
-    # assert test_2_run == 81, test_2_run
+    test_2 = Solver(inp="Input/input_test.txt")
+    test_2_run = test_2.run()
+    assert test_2_run == 81, test_2_run
 
     sol = Solver(inp="Input/input.txt")
     print("Running Part 1")
