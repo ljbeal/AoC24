@@ -29,7 +29,7 @@ class BFS:
 
         return explored
 
-    def get_adjacent(self, point: tuple[int, int]) -> list[tuple[int, int]]:
+    def get_adjacent(self, point: tuple[int, int], ignore_bounds: bool = False) -> list[tuple[int, int]]:
         """
         Gets cardinally adjacent points
 
@@ -38,16 +38,16 @@ class BFS:
         max_i = self._array.shape[0]
         max_j = self._array.shape[1]
         adj = []
-        if point[0] > 0:
+        if point[0] > 0 or ignore_bounds:
             pos = (point[0] - 1, point[1])
             adj.append(pos)
-        if point[1] > 0:
+        if point[1] > 0 or ignore_bounds:
             pos = (point[0], point[1] - 1)
             adj.append(pos)
-        if point[0] < max_i - 1:
+        if point[0] < max_i - 1 or ignore_bounds:
             pos = (point[0] + 1, point[1])
             adj.append(pos)
-        if point[1] < max_j - 1:
+        if point[1] < max_j - 1 or ignore_bounds:
             pos = (point[0], point[1] + 1)
             adj.append(pos)
 
