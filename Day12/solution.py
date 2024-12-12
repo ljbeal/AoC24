@@ -1,5 +1,7 @@
 import time
 
+import numpy as np
+
 from lib.base_solver import BaseSolver
 from lib.bfs import BFS
 
@@ -15,14 +17,46 @@ class Solver(BaseSolver):
         super().__init__(inp=inp)
 
     def run(self):
-        return NotImplemented
+        types = np.unique(self.array)
+
+        explored = np.full(self.array.shape, 0)
+
+        print(types)
+
+        cost = 0
+        for i in range(self.array.shape[0]):
+            for j in range(self.array.shape[1]):
+                if explored[i, j] == 0:
+
+                    search = FloodFill(self.array)
+
+                    connected = search.search((i, j))
+
+                    explored[i, j] = 1
+                    for node in connected:
+                        explored[node[0], node[1]] = 1
+
+                    # print(self.regenerate_coloured_text(self.array, colours={"red": connected}))
+                    area = len(connected)
+
+                    outside = []
+                    for point in connected:
+                        adj = search.get_adjacent(point, ignore_bounds=True)
+                        for node in adj:
+                            if node not in connected:
+                                outside.append(node)
+                    perimeter = len(outside)
+                    cost += area * perimeter
+
+        return cost
+
 
 
 if __name__ == "__main__":
 
     test_1 = Solver(inp="Input/input_test.txt")
     test_1_run = test_1.run()
-    assert test_1_run == 0, test_1_run
+    assert test_1_run == 1930, test_1_run
 
     # test_2 = Solver(inp="Input/input_test.txt")
     # test_2_run = test_2.run()
