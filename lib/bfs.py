@@ -34,6 +34,10 @@ class BFS:
         Gets cardinally adjacent points
 
         Ignores diagonal for now, but we may add a flag for this
+
+        Args:
+            point: point to check from
+            ignore_bounds: ignores boundary checking if True
         """
         max_i = self._array.shape[0]
         max_j = self._array.shape[1]
