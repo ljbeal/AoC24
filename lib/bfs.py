@@ -16,7 +16,7 @@ class BFS:
     def search(self, head: tuple[int, int]):
         self._queue.append(head)
 
-        explored = []
+        explored = [head]
         while len(self._queue) > 0:
             test = self._queue.popleft()
 
