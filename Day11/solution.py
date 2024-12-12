@@ -1,38 +1,7 @@
 import functools
-import multiprocessing
 import time
 
 from lib.base_solver import BaseSolver
-
-
-class Stone:
-
-    __slots__ = ["_num"]
-
-    def __init__(self, num: int | None = None):
-        self._num = num or 0
-
-    def __repr__(self):
-        return f"({self.num})"
-
-    def __hash__(self):
-        return self.num
-
-    def __eq__(self, other):
-        return hash(other) == hash(self)
-
-    @property
-    def num(self) -> int:
-        return self._num
-
-    def blink(self) -> list["Stone"]:
-        if self.num == 0:
-            return [Stone(1)]
-        if len(str(self.num)) % 2 == 0:
-            string = str(self.num)
-            mid = int(len(string) / 2)
-            return [Stone(int(string[:mid])), Stone(int(string[mid:]))]
-        return [Stone(self.num * 2024)]
 
 
 class Solver(BaseSolver):
@@ -41,25 +10,43 @@ class Solver(BaseSolver):
         super().__init__(inp=inp)
 
     def run(self, blinks: int) -> int:
-        stones = [Stone(int(num)) for num in self.data.split(" ")]
+        stones = {}
+        for stone in self.data.split(" "):
+            try_add(stones, int(stone))
+        print(stones)
 
         for blink in range(blinks):
-            print(f"performing blink {blink+1}/{blinks}")
+            print(f"processing blink {blink + 1}/{blinks}")
 
-            # I paid for the whole machine, I'm going to use the whole machine
-            with multiprocessing.Pool(12) as P:
-                tmp = P.map(blink_stone, stones)
+            tmp = {}
+            for stone, count in stones.items():
+                newstones = blink_stone(stone)
 
-            stones = []
-            for output in tmp:
-                stones += output
+                for num in newstones:
+                    try_add(tmp, num, count)
 
-        return len(stones)
+            stones = tmp
+            del tmp
+
+        return sum(stones.values())
 
 
 @functools.cache
-def blink_stone(stone: Stone) -> list[Stone]:
-    return stone.blink()
+def blink_stone(num: int) -> list[int]:
+    if num == 0:
+        return [1]
+    if len(str(num)) % 2 == 0:
+        string = str(num)
+        mid = int(len(string) / 2)
+        return [int(string[:mid]), int(string[mid:])]
+    return [num * 2024]
+
+
+def try_add(cache: dict, num: int, count: int = 1):
+    try:
+        cache[num] += count
+    except KeyError:
+        cache[num] = count
 
 
 if __name__ == "__main__":
