@@ -64,13 +64,19 @@ class Solver(BaseSolver):
                                 print(f"direction {direction}")
                                 # walk each direction, counting all non-continuous point instances
                                 test = (-10, -10)  # we should start from a test point far away
+                                if "i" in direction:
+                                    points = sorted(points, key=lambda x: (x[0], x[1]))
+                                else:
+                                    points = sorted(points, key=lambda x: (x[1], x[0]))
                                 for point in points:
                                     # compare "test" against "point", ensuring that exactly one coordinate is the same
                                     print(f"comparing {test} to {point}")
                                     a, b = test
                                     x, y = point
-                                    # print(a == x, b == y, a == y, b == x)
-                                    if a == x or b == y or a == y or b == x:
+
+                                    if direction in ["-i", "+i"] and abs(a - x) == 0 and abs(b - y) == 1:
+                                        print("\tskip")
+                                    elif direction in ["-j", "+j"] and abs(b - y) == 0 and abs(a - x) == 1:
                                         print("\tskip")
                                     else:
                                         perimeter += 1
@@ -83,17 +89,14 @@ class Solver(BaseSolver):
 
                     cost += area * perimeter
 
-                    # print(cost)
-                    # exit()
-
         return cost
 
 
 if __name__ == "__main__":
 
-    # test_1 = Solver(inp="Input/input_test.txt")
-    # test_1_run = test_1.run(discount=False)
-    # assert test_1_run == 1930, test_1_run
+    test_1 = Solver(inp="Input/input_test.txt")
+    test_1_run = test_1.run(discount=False)
+    assert test_1_run == 1930, test_1_run
 
     test_2 = Solver(inp="Input/input_test.txt")
     test_2_run = test_2.run(discount=True)
