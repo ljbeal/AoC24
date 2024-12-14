@@ -75,7 +75,7 @@ class BaseSolver:
             str: formatted array
         """
         joinchar = " " * (spacing + 1)
-        return "\n".join([joinchar.join(row) for row in array])
+        return "\n".join([joinchar.join([str(char) for char in row]) for row in array])
 
     def regenerate_coloured_text(
             self,
@@ -119,7 +119,7 @@ class BaseSolver:
                 item = array[i, j]
                 # exit early if this item is uncoloured
                 if (i, j) not in all_colours:
-                    tmp.append(item)
+                    tmp.append(str(item))
                     continue
                 # find the colour and apply the code
                 for colour, points in colours.items():
