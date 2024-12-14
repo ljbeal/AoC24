@@ -7,12 +7,24 @@ from lib.base_solver import BaseSolver
 
 class Machine:
 
-    __slots__ = ["a", "b", "target", "_a_count", "_b_count"]
+    __slots__ = ["a", "b", "target", "_a_count", "_b_count", "offset"]
 
-    def __init__(self, a: tuple[int, int], b: tuple[int, int], target: tuple[int, int]):
+    def __init__(
+            self,
+            a: tuple[int, int],
+            b: tuple[int, int],
+            target: tuple[int, int],
+            offset: True
+    ):
+        if offset:
+            _o = 10000000000000
+            target = (target[0] + _o, target[1] + _o)
+
         self.a = a
         self.b = b
         self.target = target
+
+        self.offset = True
 
         self._a_count, self._b_count = self._get_npresses()
 
@@ -44,7 +56,8 @@ class Machine:
             return False
         if not is_int(self._b_count):
             return False
-        # return self._a_count <= 100 and self._b_count <= 100
+        if not self.offset:
+            return self._a_count <= 100 and self._b_count <= 100
         return True
 
 def get_press_actions(desc: str) -> tuple[int, int]:
@@ -71,8 +84,7 @@ class Solver(BaseSolver):
 
         self._machines: list[Machine] | None = None
 
-    @property
-    def machines(self) -> list:
+    def get_machines(self, offset) -> list:
         if self._machines is not None:
             return self._machines
 
@@ -80,7 +92,7 @@ class Solver(BaseSolver):
         tmp = {}
         for line in self.data.split("\n"):
             if line.strip() == "":
-                self._machines.append(Machine(**tmp))
+                self._machines.append(Machine(offset=offset, **tmp))
                 tmp = {}
             elif "Button A" in line:
                 tmp["a"] = get_press_actions(line)
@@ -91,9 +103,9 @@ class Solver(BaseSolver):
 
         return self._machines
 
-    def run(self) -> int:
+    def run(self, offset: bool = False) -> int:
         costs = []
-        for machine in self.machines:
+        for machine in self.get_machines(offset=offset):
 
             if machine.playable:
                 print(machine)
@@ -120,8 +132,8 @@ if __name__ == "__main__":
     part_1 = sol.run()
     print(f"Part 1 result: {part_1} {time.perf_counter() - t0:.3f}s")
 
-    # sol = Solver(inp="Input/input.txt")
-    # print("Running Part 2")
-    # t0 = time.perf_counter()
-    # part_2 = sol.run()
-    # print(f"Part 2 result: {part_2} {time.perf_counter() - t0:.3f}s")
+    sol = Solver(inp="Input/input.txt")
+    print("Running Part 2")
+    t0 = time.perf_counter()
+    part_2 = sol.run(offset=True)
+    print(f"Part 2 result: {part_2} {time.perf_counter() - t0:.3f}s")
